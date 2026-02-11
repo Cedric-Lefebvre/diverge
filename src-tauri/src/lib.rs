@@ -1,5 +1,6 @@
 mod commands;
 mod compare;
+mod config;
 mod models;
 mod scanner;
 
@@ -12,8 +13,11 @@ pub fn run() {
 }
 
 pub fn run_with_args(left_dir: String, right_dir: String) {
+    let cfg = config::load_config().unwrap_or_else(|_| config::default_config());
+
     let state = AppState {
         cli_args: CliArgs { left_dir, right_dir },
+        config: cfg,
     };
 
     tauri::Builder::default()
@@ -25,6 +29,8 @@ pub fn run_with_args(left_dir: String, right_dir: String) {
             commands::write_file,
             commands::read_file,
             commands::get_cli_args,
+            commands::get_config,
+            commands::save_config,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

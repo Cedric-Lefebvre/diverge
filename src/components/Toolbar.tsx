@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { open } from "@tauri-apps/plugin-dialog";
 
 interface ToolbarProps {
@@ -34,8 +33,6 @@ export function Toolbar({
   hasModified,
   hasChecked,
 }: ToolbarProps) {
-  const [saveStatus, setSaveStatus] = useState<string | null>(null);
-
   const pickFolder = async (side: "left" | "right") => {
     try {
       const selected = await open({
@@ -49,19 +46,6 @@ export function Toolbar({
       }
     } catch (err) {
       console.error("Folder picker failed:", err);
-    }
-  };
-
-  const handleSave = async () => {
-    try {
-      setSaveStatus("saving");
-      const count = await onSaveAll();
-      setSaveStatus(`Saved ${count} file${count !== 1 ? "s" : ""}`);
-      setTimeout(() => setSaveStatus(null), 3000);
-    } catch (err) {
-      setSaveStatus("Save failed");
-      setTimeout(() => setSaveStatus(null), 3000);
-      console.error("Save failed:", err);
     }
   };
 
@@ -127,11 +111,11 @@ export function Toolbar({
           </button>
           <button
             className="btn btn-success"
-            onClick={handleSave}
-            disabled={!hasModified || saveStatus === "saving"}
+            onClick={onSaveAll}
+            disabled={!hasModified}
             title="Save all modified files to disk"
           >
-            {saveStatus === "saving" ? "Saving..." : saveStatus ?? "💾 Save All"}
+            💾 Save All
           </button>
           <button className="btn btn-ghost" onClick={onRefresh} title="Re-scan directories">
             ↻ Refresh

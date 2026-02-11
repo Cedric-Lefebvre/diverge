@@ -1,6 +1,6 @@
 import { DiffEditor as MonacoDiffEditor } from "@monaco-editor/react";
 import type { editor } from "monaco-editor";
-import { useRef, useEffect, useCallback } from "react";
+import { useRef, useEffect, useCallback, useState } from "react";
 import type { CompareEntry } from "../types";
 import { getLanguageForFile } from "../utils/languageMap";
 import { MONACO_DIFF_OPTIONS } from "../constants/statusConfig";
@@ -22,6 +22,7 @@ export function DiffEditorView({
 }: DiffEditorProps) {
   const editorRef = useRef<editor.IStandaloneDiffEditor | null>(null);
   const disposableRef = useRef<{ dispose: () => void } | null>(null);
+  const [minimapEnabled, setMinimapEnabled] = useState(false);
 
   const language = getLanguageForFile(entry.rel_path);
   const rightContent = modifiedContent ?? entry.right_content;
@@ -37,13 +38,30 @@ export function DiffEditorView({
     [onContentChange]
   );
 
-  // Cleanup listener on unmount
   useEffect(() => {
     return () => {
       disposableRef.current?.dispose();
       disposableRef.current = null;
     };
   }, []);
+
+  useEffect(() => {
+    if (!editorRef.current) return;
+    editorRef.current.getModifiedEditor().updateOptions({
+      minimap: { enabled: minimapEnabled },
+    });
+    editorRef.current.getOriginalEditor().updateOptions({
+      minimap: { enabled: minimapEnabled },
+    });
+  }, [minimapEnabled]);
+
+  const triggerOutline = () => {
+    const ed = editorRef.current?.getModifiedEditor();
+    if (ed) {
+      ed.focus();
+      ed.trigger("keyboard", "editor.action.quickOutline", null);
+    }
+  };
 
   return (
     <div className="diff-editor-container">
@@ -55,6 +73,20 @@ export function DiffEditorView({
           </span>
         </div>
         <div className="diff-editor-actions">
+          <button
+            className={`btn-tiny ${minimapEnabled ? "active" : ""}`}
+            onClick={() => setMinimapEnabled(!minimapEnabled)}
+            title={minimapEnabled ? "Hide minimap" : "Show minimap"}
+          >
+            ▐
+          </button>
+          <button
+            className="btn-tiny"
+            onClick={triggerOutline}
+            title="Go to symbol (Ctrl+Shift+O)"
+          >
+            ⊟
+          </button>
           {entry.status === "different" && (
             <button
               className="btn btn-sm btn-accent"

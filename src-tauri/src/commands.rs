@@ -3,17 +3,26 @@ use std::path::Path;
 use std::sync::Mutex;
 
 use crate::compare;
-use crate::models::{AppState, CliArgs, CompareResult};
+use crate::config;
+use crate::models::{AppConfig, AppState, CliArgs, CompareResult};
 
 #[tauri::command]
-pub fn compare_directories(left: String, right: String) -> Result<CompareResult, String> {
+pub fn compare_directories(
+    left: String,
+    right: String,
+    state: tauri::State<'_, Mutex<AppState>>,
+) -> Result<CompareResult, String> {
     if !Path::new(&left).is_dir() {
         return Err(format!("Left path is not a directory: {}", left));
     }
     if !Path::new(&right).is_dir() {
         return Err(format!("Right path is not a directory: {}", right));
     }
-    Ok(compare::compare(&left, &right))
+    let ignore_dirs = state
+        .lock()
+        .map(|s| s.config.ignore_dirs.clone())
+        .map_err(|_| "Failed to read application state".to_string())?;
+    Ok(compare::compare(&left, &right, &ignore_dirs))
 }
 
 #[tauri::command]
@@ -36,4 +45,25 @@ pub fn get_cli_args(state: tauri::State<'_, Mutex<AppState>>) -> Result<CliArgs,
         .lock()
         .map(|s| s.cli_args.clone())
         .map_err(|_| "Failed to read application state".to_string())
+}
+
+#[tauri::command]
+pub fn get_config(state: tauri::State<'_, Mutex<AppState>>) -> Result<AppConfig, String> {
+    state
+        .lock()
+        .map(|s| s.config.clone())
+        .map_err(|_| "Failed to read application state".to_string())
+}
+
+#[tauri::command]
+pub fn save_config(
+    new_config: AppConfig,
+    state: tauri::State<'_, Mutex<AppState>>,
+) -> Result<(), String> {
+    config::save_config(&new_config)?;
+    let mut s = state
+        .lock()
+        .map_err(|_| "Failed to read application state".to_string())?;
+    s.config = new_config;
+    Ok(())
 }

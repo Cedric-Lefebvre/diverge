@@ -1,4 +1,4 @@
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize)]
 pub struct CliArgs {
@@ -6,8 +6,15 @@ pub struct CliArgs {
     pub right_dir: String,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct AppConfig {
+    #[serde(default)]
+    pub ignore_dirs: Vec<String>,
+}
+
 pub struct AppState {
     pub cli_args: CliArgs,
+    pub config: AppConfig,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -28,4 +35,5 @@ pub struct CompareResult {
     pub different: usize,
     pub only_left: usize,
     pub only_right: usize,
+    pub ignored_dirs: Vec<String>,
 }
