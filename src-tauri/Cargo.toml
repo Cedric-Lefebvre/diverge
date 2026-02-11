@@ -1,6 +1,6 @@
 [package]
 name = "diverge"
-version = "0.1.1"
+version = "0.1.2"
 description = "Desktop folder comparison tool with side-by-side diff viewing"
 authors = ["cedric"]
 license = "MIT"
