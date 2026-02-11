@@ -14,11 +14,16 @@ export interface CompareResult {
   different: number;
   only_left: number;
   only_right: number;
+  ignored_dirs: string[];
 }
 
 export interface CliArgs {
   left_dir: string;
   right_dir: string;
+}
+
+export interface AppConfig {
+  ignore_dirs: string[];
 }
 
 export type EffectiveStatus =

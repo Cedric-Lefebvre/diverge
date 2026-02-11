@@ -596,3 +596,313 @@ body {
   font-family: var(--font-mono);
   opacity: 0.8;
 }
+
+/* ============================================================
+   Settings Panel
+   ============================================================ */
+
+.settings-panel {
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.settings-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.1s;
+}
+
+.settings-header:hover {
+  background: var(--bg-hover);
+}
+
+.settings-chevron {
+  font-size: 9px;
+  color: var(--text-secondary);
+  width: 12px;
+  text-align: center;
+}
+
+.settings-title {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-secondary);
+}
+
+.settings-count {
+  font-size: 10px;
+  color: var(--text-muted);
+  background: var(--bg-tertiary);
+  padding: 1px 5px;
+  border-radius: 8px;
+}
+
+.settings-dirty {
+  font-size: 10px;
+  color: var(--warning);
+  font-style: italic;
+}
+
+.settings-body {
+  padding: 8px 12px;
+  border-top: 1px solid var(--border);
+}
+
+.settings-add-row {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.settings-add-input {
+  flex: 1;
+  min-width: 0;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  padding: 4px 8px;
+  border-radius: 3px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.settings-add-input:focus {
+  border-color: var(--accent);
+}
+
+.settings-add-input::placeholder {
+  color: var(--text-muted);
+}
+
+.settings-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  max-height: 160px;
+  overflow-y: auto;
+  padding: 2px 0;
+}
+
+.settings-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.settings-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.settings-list::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
+}
+
+.settings-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 2px 4px 2px 8px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-primary);
+}
+
+.settings-item-label {
+  cursor: default;
+}
+
+.settings-edit-input {
+  background: var(--bg-input);
+  border: 1px solid var(--accent);
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  padding: 0 4px;
+  border-radius: 2px;
+  outline: none;
+  width: 100px;
+}
+
+.settings-item-remove {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+  padding: 0 2px;
+  transition: color 0.1s;
+}
+
+.settings-item-remove:hover {
+  color: var(--danger);
+}
+
+.settings-footer {
+  margin-top: 8px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* ============================================================
+   Ignored Directories (File Tree footer)
+   ============================================================ */
+
+.ignored-section {
+  border-top: 1px solid var(--border);
+  opacity: 0.5;
+}
+
+.ignored-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 8px;
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.1s;
+}
+
+.ignored-header:hover {
+  background: var(--bg-hover);
+}
+
+.ignored-title {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+}
+
+.ignored-item {
+  padding: 3px 12px 3px 30px;
+  font-size: 12px;
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+}
+
+/* ============================================================
+   File Tree Search
+   ============================================================ */
+
+.file-tree-search {
+  position: relative;
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.file-tree-search input {
+  width: 100%;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  padding: 4px 24px 4px 8px;
+  border-radius: 3px;
+  font-size: 12px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.file-tree-search input:focus {
+  border-color: var(--accent);
+}
+
+.file-tree-search input::placeholder {
+  color: var(--text-muted);
+}
+
+.file-tree-search-clear {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+  padding: 2px;
+}
+
+.file-tree-search-clear:hover {
+  color: var(--text-primary);
+}
+
+.file-tree-no-results {
+  padding: 12px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+/* ============================================================
+   Toast Notifications
+   ============================================================ */
+
+.toast-container {
+  position: fixed;
+  bottom: 32px;
+  right: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  z-index: 9999;
+  pointer-events: none;
+}
+
+.toast {
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-size: 13px;
+  font-weight: 500;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  animation: toast-in 0.2s ease-out, toast-out 0.3s ease-in 2.7s forwards;
+  pointer-events: auto;
+}
+
+.toast-success {
+  background: #1a5a2a;
+  color: #4ec9b0;
+  border: 1px solid #2a7a3a;
+}
+
+.toast-error {
+  background: #5a1d1d;
+  color: #f48771;
+  border: 1px solid #8b3a3a;
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes toast-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}

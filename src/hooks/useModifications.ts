@@ -75,8 +75,27 @@ export function useModifications(
       if (content === undefined) return;
       const targetPath = entry.right_path || `${rightDir}/${relPath}`;
       await invoke("write_file", { path: targetPath, content });
+
+      if (result) {
+        const updatedEntries = result.entries.map((e) => {
+          if (e.rel_path !== relPath) return e;
+          return {
+            ...e,
+            right_content: content,
+            right_path: targetPath,
+            status: (e.left_content === content ? "identical" : "different") as CompareEntry["status"],
+          };
+        });
+        refreshResult({ ...result, entries: updatedEntries });
+      }
+
+      setModifiedContents((prev) => {
+        const next = { ...prev };
+        delete next[relPath];
+        return next;
+      });
     },
-    [result, modifiedContents, rightDir]
+    [result, modifiedContents, rightDir, refreshResult]
   );
 
   const saveAll = useCallback(

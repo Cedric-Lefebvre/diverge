@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import type { CompareEntry, EffectiveStatus } from "../types";
 import { STATUS_STYLES } from "../constants/statusConfig";
 import { getFolderForPath, getFileName } from "../utils/pathUtils";
@@ -8,6 +8,7 @@ interface FileTreeProps {
   selectedFile: string | null;
   checkedFiles: Set<string>;
   collapsedFolders: Set<string>;
+  ignoreDirs: string[];
   getEffectiveStatus: (entry: CompareEntry) => EffectiveStatus;
   onSelect: (relPath: string) => void;
   onToggleChecked: (relPath: string) => void;
@@ -23,6 +24,7 @@ export function FileTree({
   selectedFile,
   checkedFiles,
   collapsedFolders,
+  ignoreDirs,
   getEffectiveStatus,
   onSelect,
   onToggleChecked,
@@ -32,15 +34,24 @@ export function FileTree({
   onCheckAllDifferent,
   onUncheckAll,
 }: FileTreeProps) {
+  const [ignoredCollapsed, setIgnoredCollapsed] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const filteredEntries = useMemo(() => {
+    if (!searchQuery) return entries;
+    const q = searchQuery.toLowerCase();
+    return entries.filter((e) => e.rel_path.toLowerCase().includes(q));
+  }, [entries, searchQuery]);
+
   const { grouped, folderKeys } = useMemo(() => {
     const map = new Map<string, CompareEntry[]>();
-    for (const entry of entries) {
+    for (const entry of filteredEntries) {
       const dir = getFolderForPath(entry.rel_path);
       if (!map.has(dir)) map.set(dir, []);
       map.get(dir)!.push(entry);
     }
     return { grouped: map, folderKeys: [...map.keys()].sort() };
-  }, [entries]);
+  }, [filteredEntries]);
 
   const getFolderCheckState = (folder: string): "all" | "some" | "none" => {
     const files = grouped.get(folder) ?? [];
@@ -94,6 +105,26 @@ export function FileTree({
           </button>
         </div>
       </div>
+
+      <div className="file-tree-search">
+        <input
+          type="text"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder="Filter files..."
+          spellCheck={false}
+        />
+        {searchQuery && (
+          <button
+            className="file-tree-search-clear"
+            onClick={() => setSearchQuery("")}
+            title="Clear filter"
+          >
+            ×
+          </button>
+        )}
+      </div>
+
       <div className="file-tree-list">
         {folderKeys.map((dir) => {
           const files = grouped.get(dir)!;
@@ -181,6 +212,31 @@ export function FileTree({
             </div>
           );
         })}
+
+        {searchQuery && folderKeys.length === 0 && (
+          <div className="file-tree-no-results">No files match "{searchQuery}"</div>
+        )}
+
+        {ignoreDirs.length > 0 && (
+          <div className="ignored-section">
+            <div
+              className="ignored-header"
+              onClick={() => setIgnoredCollapsed(!ignoredCollapsed)}
+            >
+              <span className="folder-chevron">
+                {ignoredCollapsed ? "▶" : "▼"}
+              </span>
+              <span className="ignored-title">Ignored</span>
+              <span className="folder-count">{ignoreDirs.length}</span>
+            </div>
+            {!ignoredCollapsed &&
+              ignoreDirs.map((dir) => (
+                <div key={dir} className="ignored-item">
+                  {dir}
+                </div>
+              ))}
+          </div>
+        )}
       </div>
     </div>
   );
