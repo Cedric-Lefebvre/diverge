@@ -1,7 +1,17 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect, useCallback, useRef } from "react";
 import type { CompareEntry, EffectiveStatus } from "../types";
 import { STATUS_STYLES } from "../constants/statusConfig";
 import { getFolderForPath, getFileName } from "../utils/pathUtils";
+
+type StatusFilter = "different" | "only_left" | "only_right" | "identical";
+const ALL_STATUSES: StatusFilter[] = ["different", "only_left", "only_right", "identical"];
+
+const FILTER_LABELS: Record<StatusFilter, { icon: string; label: string; color: string }> = {
+  different: { icon: "≠", label: "Different", color: "#e5c07b" },
+  only_left: { icon: "←", label: "Only left", color: "#e06c75" },
+  only_right: { icon: "→", label: "Only right", color: "#c678dd" },
+  identical: { icon: "✓", label: "Identical", color: "#4ec9b0" },
+};
 
 interface FileTreeProps {
   entries: CompareEntry[];
@@ -36,12 +46,39 @@ export function FileTree({
 }: FileTreeProps) {
   const [ignoredCollapsed, setIgnoredCollapsed] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
+  const [activeStatuses, setActiveStatuses] = useState<Set<StatusFilter>>(
+    new Set(ALL_STATUSES)
+  );
+  const treeRef = useRef<HTMLDivElement>(null);
+  const searchRef = useRef<HTMLInputElement>(null);
+
+  const toggleStatus = (status: StatusFilter) => {
+    setActiveStatuses((prev) => {
+      const next = new Set(prev);
+      if (next.has(status)) {
+        if (next.size > 1) next.delete(status);
+      } else {
+        next.add(status);
+      }
+      return next;
+    });
+  };
+
+  const statusMatchesFilter = (entry: CompareEntry): boolean => {
+    const eff = getEffectiveStatus(entry);
+    if (eff === "applied") return activeStatuses.has("different");
+    return activeStatuses.has(eff as StatusFilter);
+  };
 
   const filteredEntries = useMemo(() => {
-    if (!searchQuery) return entries;
-    const q = searchQuery.toLowerCase();
-    return entries.filter((e) => e.rel_path.toLowerCase().includes(q));
-  }, [entries, searchQuery]);
+    let result = entries.filter(statusMatchesFilter);
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      result = result.filter((e) => e.rel_path.toLowerCase().includes(q));
+    }
+    return result;
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [entries, searchQuery, activeStatuses, getEffectiveStatus]);
 
   const { grouped, folderKeys } = useMemo(() => {
     const map = new Map<string, CompareEntry[]>();
@@ -52,6 +89,62 @@ export function FileTree({
     }
     return { grouped: map, folderKeys: [...map.keys()].sort() };
   }, [filteredEntries]);
+
+  const statusCounts = useMemo(() => {
+    const counts: Record<StatusFilter, number> = { different: 0, only_left: 0, only_right: 0, identical: 0 };
+    for (const entry of entries) {
+      const eff = getEffectiveStatus(entry);
+      if (eff === "applied") counts.different++;
+      else if (eff in counts) counts[eff as StatusFilter]++;
+    }
+    return counts;
+  }, [entries, getEffectiveStatus]);
+
+  const visiblePaths = useMemo(() => {
+    const paths: string[] = [];
+    for (const dir of folderKeys) {
+      if (collapsedFolders.has(dir)) continue;
+      for (const entry of grouped.get(dir)!) {
+        paths.push(entry.rel_path);
+      }
+    }
+    return paths;
+  }, [folderKeys, grouped, collapsedFolders]);
+
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent) => {
+      const tag = (e.target as HTMLElement)?.tagName;
+      if (tag === "INPUT" || tag === "TEXTAREA") return;
+
+      if (e.key === "/" || (e.key === "f" && (e.ctrlKey || e.metaKey))) {
+        e.preventDefault();
+        searchRef.current?.focus();
+        return;
+      }
+
+      if (visiblePaths.length === 0) return;
+      const currentIdx = selectedFile ? visiblePaths.indexOf(selectedFile) : -1;
+
+      if (e.key === "ArrowDown" || e.key === "j") {
+        e.preventDefault();
+        const next = currentIdx < visiblePaths.length - 1 ? currentIdx + 1 : 0;
+        onSelect(visiblePaths[next]);
+      } else if (e.key === "ArrowUp" || e.key === "k") {
+        e.preventDefault();
+        const prev = currentIdx > 0 ? currentIdx - 1 : visiblePaths.length - 1;
+        onSelect(visiblePaths[prev]);
+      } else if (e.key === " " && selectedFile) {
+        e.preventDefault();
+        onToggleChecked(selectedFile);
+      }
+    },
+    [visiblePaths, selectedFile, onSelect, onToggleChecked]
+  );
+
+  useEffect(() => {
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [handleKeyDown]);
 
   const getFolderCheckState = (folder: string): "all" | "some" | "none" => {
     const files = grouped.get(folder) ?? [];
@@ -78,7 +171,7 @@ export function FileTree({
     folderKeys.length > 0 && collapsedFolders.size === folderKeys.length;
 
   return (
-    <div className="file-tree">
+    <div className="file-tree" ref={treeRef}>
       <div className="file-tree-header">
         <span className="file-tree-title">Files</span>
         <div className="file-tree-actions">
@@ -108,10 +201,17 @@ export function FileTree({
 
       <div className="file-tree-search">
         <input
+          ref={searchRef}
           type="text"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="Filter files..."
+          onKeyDown={(e) => {
+            if (e.key === "Escape") {
+              setSearchQuery("");
+              (e.target as HTMLElement).blur();
+            }
+          }}
+          placeholder="Filter files... ( / )"
           spellCheck={false}
         />
         {searchQuery && (
@@ -123,6 +223,29 @@ export function FileTree({
             ×
           </button>
         )}
+      </div>
+
+      <div className="status-filters">
+        {ALL_STATUSES.map((status) => {
+          const f = FILTER_LABELS[status];
+          const active = activeStatuses.has(status);
+          const count = statusCounts[status];
+          return (
+            <button
+              key={status}
+              className={`status-filter-btn ${active ? "active" : ""}`}
+              onClick={() => toggleStatus(status)}
+              title={`${active ? "Hide" : "Show"} ${f.label}`}
+              style={{
+                borderColor: active ? f.color : undefined,
+                color: active ? f.color : undefined,
+              }}
+            >
+              <span>{f.icon}</span>
+              <span>{count}</span>
+            </button>
+          );
+        })}
       </div>
 
       <div className="file-tree-list">
@@ -213,8 +336,10 @@ export function FileTree({
           );
         })}
 
-        {searchQuery && folderKeys.length === 0 && (
-          <div className="file-tree-no-results">No files match "{searchQuery}"</div>
+        {filteredEntries.length === 0 && (
+          <div className="file-tree-no-results">
+            {searchQuery ? `No files match "${searchQuery}"` : "No files match current filters"}
+          </div>
         )}
 
         {ignoreDirs.length > 0 && (

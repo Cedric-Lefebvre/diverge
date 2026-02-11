@@ -851,6 +851,51 @@ body {
 }
 
 /* ============================================================
+   Status Filter Toggles
+   ============================================================ */
+
+.status-filters {
+  display: flex;
+  gap: 4px;
+  padding: 4px 8px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.status-filter-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 3px 0;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  transition: all 0.1s;
+}
+
+.status-filter-btn:hover {
+  background: var(--bg-hover);
+}
+
+.status-filter-btn.active {
+  background: var(--bg-tertiary);
+}
+
+/* ============================================================
+   Diff Editor Toolbar Buttons
+   ============================================================ */
+
+.btn-tiny.active {
+  color: var(--accent) !important;
+}
+
+/* ============================================================
    Toast Notifications
    ============================================================ */
 
