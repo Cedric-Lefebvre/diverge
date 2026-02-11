@@ -31,11 +31,15 @@ fn resolve_path(p: &str) -> String {
 fn main() {
     let args: Vec<String> = std::env::args().collect();
 
+    let cwd = std::env::current_dir()
+        .map(|p| p.to_string_lossy().to_string())
+        .unwrap_or_default();
+
     let (left, right) = if args.len() >= 3 {
         (resolve_path(&args[1]), resolve_path(&args[2]))
     } else {
         (String::new(), String::new())
     };
 
-    diverge_lib::run_with_args(left, right);
+    diverge_lib::run_with_args(left, right, cwd);
 }

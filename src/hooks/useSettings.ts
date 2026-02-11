@@ -45,6 +45,18 @@ export function useSettings() {
     setDirty(true);
   }, []);
 
+  const updateEditorPref = useCallback((patch: Partial<AppConfig["editor_preferences"]>) => {
+    setConfig((prev) => {
+      if (!prev) return prev;
+      const updated = {
+        ...prev,
+        editor_preferences: { ...prev.editor_preferences, ...patch },
+      };
+      invoke("save_config", { newConfig: updated });
+      return updated;
+    });
+  }, []);
+
   const save = useCallback(async () => {
     if (!config) return;
     setSaving(true);
@@ -56,5 +68,5 @@ export function useSettings() {
     }
   }, [config]);
 
-  return { config, dirty, saving, addIgnoreDir, removeIgnoreDir, editIgnoreDir, save };
+  return { config, dirty, saving, addIgnoreDir, removeIgnoreDir, editIgnoreDir, updateEditorPref, save };
 }

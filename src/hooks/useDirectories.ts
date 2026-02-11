@@ -8,6 +8,7 @@ export function useDirectories() {
   const [result, setResult] = useState<CompareResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [cwd, setCwd] = useState("");
 
   const initDone = useRef(false);
   useEffect(() => {
@@ -15,6 +16,7 @@ export function useDirectories() {
     initDone.current = true;
 
     invoke<CliArgs>("get_cli_args").then((args) => {
+      if (args.cwd) setCwd(args.cwd);
       if (args.left_dir && args.right_dir) {
         setLeftDir(args.left_dir);
         setRightDir(args.right_dir);
@@ -66,5 +68,6 @@ export function useDirectories() {
     error,
     compare,
     clear,
+    cwd,
   };
 }

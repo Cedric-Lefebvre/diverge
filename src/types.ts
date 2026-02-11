@@ -20,10 +20,17 @@ export interface CompareResult {
 export interface CliArgs {
   left_dir: string;
   right_dir: string;
+  cwd: string;
+}
+
+export interface EditorPreferences {
+  minimap_enabled: boolean;
+  show_full_content: boolean;
 }
 
 export interface AppConfig {
   ignore_dirs: string[];
+  editor_preferences: EditorPreferences;
 }
 
 export type EffectiveStatus =

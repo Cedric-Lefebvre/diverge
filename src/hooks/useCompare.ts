@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useRef } from "react";
 import { useDirectories } from "./useDirectories";
 import { useFileTree } from "./useFileTree";
 import { useModifications } from "./useModifications";
@@ -8,17 +8,24 @@ export function useCompare() {
   const tree = useFileTree(dirs.result);
   const mods = useModifications(dirs.result, dirs.rightDir, dirs.setResult);
 
+  const dirsRef = useRef(dirs);
+  dirsRef.current = dirs;
+  const treeRef = useRef(tree);
+  treeRef.current = tree;
+  const modsRef = useRef(mods);
+  modsRef.current = mods;
+
   const compare = useCallback(async () => {
-    await dirs.compare();
-    tree.reset();
-    mods.reset();
-  }, [dirs, tree, mods]);
+    await dirsRef.current.compare();
+    treeRef.current.reset();
+    modsRef.current.reset();
+  }, []);
 
   const clear = useCallback(() => {
-    dirs.clear();
-    tree.reset();
-    mods.reset();
-  }, [dirs, tree, mods]);
+    dirsRef.current.clear();
+    treeRef.current.reset();
+    modsRef.current.reset();
+  }, []);
 
   const applySelectedToRight = useCallback(() => {
     mods.applySelectedToRight(tree.checkedFiles);
@@ -37,6 +44,7 @@ export function useCompare() {
     result: dirs.result,
     loading: dirs.loading,
     error: dirs.error,
+    cwd: dirs.cwd,
 
     // File tree
     selectedFile: tree.selectedFile,

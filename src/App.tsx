@@ -51,6 +51,15 @@ function App() {
     showToast(`Applied ${count} selected file${count !== 1 ? "s" : ""}`);
   }, [cmp, showToast]);
 
+  const handleRefresh = useCallback(async () => {
+    try {
+      await cmp.compare();
+      showToast("Directories re-scanned");
+    } catch {
+      showToast("Refresh failed", "error");
+    }
+  }, [cmp, showToast]);
+
   const handleSaveSettings = useCallback(async () => {
     try {
       await settings.save();
@@ -65,13 +74,14 @@ function App() {
       <Toolbar
         leftDir={cmp.leftDir}
         rightDir={cmp.rightDir}
+        cwd={cmp.cwd}
         onSetLeftDir={cmp.setLeftDir}
         onSetRightDir={cmp.setRightDir}
         onCompare={cmp.compare}
         onApplyAll={handleApplyAll}
         onApplySelected={handleApplySelected}
         onSaveAll={handleSaveAll}
-        onRefresh={cmp.compare}
+        onRefresh={handleRefresh}
         onClear={cmp.clear}
         loading={cmp.loading}
         hasResult={!!cmp.result}
@@ -116,6 +126,9 @@ function App() {
               key={cmp.selectedFile}
               entry={cmp.selectedEntry}
               modifiedContent={cmp.modifiedContents[cmp.selectedFile!]}
+              minimapEnabled={settings.config?.editor_preferences.minimap_enabled ?? false}
+              showFullContent={settings.config?.editor_preferences.show_full_content ?? true}
+              onEditorPrefChange={settings.updateEditorPref}
               onContentChange={(content) =>
                 cmp.updateModifiedContent(cmp.selectedFile!, content)
               }

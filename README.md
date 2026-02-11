@@ -1,4 +1,4 @@
-# diverge
+# Diverge
 
 A desktop app for comparing two directories side-by-side with inline editing. Built with Tauri, React, TypeScript, and Monaco Editor.
 
@@ -12,24 +12,76 @@ A desktop app for comparing two directories side-by-side with inline editing. Bu
 - Inline editing on the right side before saving
 - Folder tree with collapsible directories and folder-level checkboxes
 - Color-coded file status: green (identical/applied), yellow (different), red (only left), purple (only right)
+- Status filter toggles to show/hide files by status (Different, Only Left, Only Right, Identical)
+- Search bar to filter files in the tree
+- Keyboard navigation: arrow keys / j/k to navigate, Space to toggle, / to search, Escape to blur
+- Document outline modal for YAML/JSON/code files (browse structure, click to jump)
+- Minimap toggle for the diff editor (persisted in settings)
+- Configurable ignore directories (`~/.diverge/config.yaml`)
+- Toast notifications for save/apply actions
 - Native folder picker dialogs
 - CLI support with relative and absolute paths
 - Cross-platform: Linux (X11/Wayland) and macOS
 
 ## Install
 
+### From releases
+
+Download the latest release from the [Releases](https://github.com/Cedric-Lefebvre/diverge/releases) page.
+
+**Linux:** Download the `.deb` or `.AppImage` file.
+
+```bash
+# .deb (Debian/Ubuntu)
+sudo dpkg -i Diverge_x.x.x_amd64.deb
+
+# .AppImage (any distro)
+chmod +x Diverge_x.x.x_amd64.AppImage
+./Diverge_x.x.x_amd64.AppImage
+```
+
+**macOS:** Download the `.dmg` file. See the [macOS install guide](#macos-install) below.
+
 ### From source
 
 Prerequisites: [Node.js](https://nodejs.org/), [pnpm](https://pnpm.io/), [Rust](https://rustup.rs/), and the [Tauri v2 prerequisites](https://v2.tauri.app/start/prerequisites/) for your OS.
 
 ```bash
-git clone https://github.com/your-username/diverge.git
+git clone https://github.com/Cedric-Lefebvre/diverge.git
 cd diverge
 pnpm install
 pnpm tauri build
 ```
 
 The built packages (`.deb`, `.rpm`, `.AppImage` on Linux, `.dmg` on macOS) will be in `src-tauri/target/release/bundle/`.
+
+## macOS install
+
+### Installing the .dmg
+
+1. Open the `.dmg` file
+2. Drag **Diverge** to the **Applications** folder
+3. On first launch, macOS may block the app because it is unsigned. Right-click (or Ctrl+click) the app in Applications and select **Open**, then click **Open** in the dialog
+
+If you see "Diverge is damaged and can't be opened", run:
+
+```bash
+xattr -cr /Applications/Diverge.app
+```
+
+### Adding to PATH (CLI usage)
+
+To use `diverge` from the terminal, create a symlink:
+
+```bash
+sudo ln -sf /Applications/Diverge.app/Contents/MacOS/Diverge /usr/local/bin/diverge
+```
+
+Now you can run:
+
+```bash
+diverge ./folder-a ./folder-b
+```
 
 ## Usage
 
@@ -50,6 +102,31 @@ diverge ./env-staging ./env-production
 diverge ./local-config /etc/app/config
 ```
 
+### Keyboard shortcuts
+
+| Key | Action |
+|-----|--------|
+| `↑` / `k` | Previous file |
+| `↓` / `j` | Next file |
+| `Space` | Toggle checkbox |
+| `/` | Focus search bar |
+| `Escape` | Blur search / close modal |
+
+### Configuration
+
+Settings are stored in `~/.diverge/config.yaml`. You can edit them from the app (collapsible "Ignored Directories" panel) or directly in the file.
+
+```yaml
+ignore_dirs:
+  - .git
+  - node_modules
+  - __pycache__
+  - target
+  - vendor
+editor_preferences:
+  minimap_enabled: false
+```
+
 ### Development
 
 ```bash
@@ -59,13 +136,23 @@ pnpm tauri dev
 pnpm tauri dev -- -- ./left-folder ./right-folder
 ```
 
+### Running tests
+
+```bash
+# Rust tests
+cd src-tauri && cargo test
+
+# Frontend tests
+pnpm vitest run
+```
+
 ## Project structure
 
 ```
 src/                    # React frontend
-  components/           # FileTree, DiffEditor, Toolbar, StatusBar
-  hooks/                # useCompare, useDirectories, useFileTree, useModifications
-  utils/                # Path utilities, language detection
+  components/           # FileTree, DiffEditor, Toolbar, StatusBar, OutlineModal, SettingsPanel
+  hooks/                # useCompare, useDirectories, useFileTree, useModifications, useSettings, useToast
+  utils/                # Path utilities, language detection, structure parser
   constants/            # Status styles, Monaco config
   types.ts              # Shared TypeScript interfaces
 src-tauri/              # Rust backend
@@ -75,6 +162,7 @@ src-tauri/              # Rust backend
     commands.rs         # Tauri IPC commands
     compare.rs          # Directory comparison logic
     scanner.rs          # Recursive file scanning
+    config.rs           # YAML config management
     models.rs           # Data structures
 ```
 

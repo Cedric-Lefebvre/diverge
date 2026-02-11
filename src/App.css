@@ -245,8 +245,23 @@ body {
   line-height: 1;
 }
 
-.btn-tiny:hover {
+.btn-tiny:hover:not(:disabled) {
   color: var(--text-primary);
+}
+
+.btn-tiny:disabled {
+  color: var(--text-muted);
+  cursor: default;
+  opacity: 0.4;
+}
+
+.btn-separator {
+  display: inline-block;
+  width: 1px;
+  height: 14px;
+  background: var(--border);
+  margin: 0 4px;
+  vertical-align: middle;
 }
 
 /* ============================================================
@@ -950,4 +965,146 @@ body {
   to {
     opacity: 0;
   }
+}
+
+/* ============================================================
+   Outline Modal
+   ============================================================ */
+
+.outline-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 15vh;
+  z-index: 9000;
+  animation: outline-fade-in 0.1s ease-out;
+}
+
+.outline-modal {
+  width: 480px;
+  max-height: 60vh;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-light);
+  border-radius: 6px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.outline-search {
+  padding: 8px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.outline-search input {
+  width: 100%;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  padding: 6px 10px;
+  border-radius: 4px;
+  font-size: 13px;
+  font-family: var(--font-mono);
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.outline-search input:focus {
+  border-color: var(--accent);
+}
+
+.outline-search input::placeholder {
+  color: var(--text-muted);
+}
+
+.outline-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 4px 0;
+}
+
+.outline-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.outline-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.outline-list::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
+}
+
+.outline-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  cursor: pointer;
+  transition: background 0.05s;
+  font-size: 13px;
+}
+
+.outline-item:hover,
+.outline-item.selected {
+  background: var(--bg-selected);
+}
+
+.outline-item-icon {
+  font-size: 10px;
+  color: var(--accent);
+  flex-shrink: 0;
+  width: 12px;
+  text-align: center;
+}
+
+.outline-item-key {
+  font-family: var(--font-mono);
+  color: var(--text-primary);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.outline-item-line {
+  margin-left: auto;
+  font-size: 11px;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  flex-shrink: 0;
+}
+
+.outline-empty {
+  padding: 16px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+@keyframes outline-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* ============================================================
+   Jump Highlight (flash on navigate)
+   ============================================================ */
+
+.jump-highlight {
+  background: rgba(255, 213, 79, 0.35);
+  animation: jump-highlight-fade 1.2s ease-out forwards;
+}
+
+@keyframes jump-highlight-fade {
+  0% { background: rgba(255, 213, 79, 0.35); }
+  70% { background: rgba(255, 213, 79, 0.2); }
+  100% { background: transparent; }
 }

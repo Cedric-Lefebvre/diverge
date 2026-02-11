@@ -1,0 +1,78 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag to build (e.g. v0.1.2)"
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-22.04
+            target: linux
+          - os: macos-latest
+            target: macos-arm
+          - os: macos-13
+            target: macos-intel
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install Linux dependencies
+        if: matrix.target == 'linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libwebkit2gtk-4.1-dev \
+            libappindicator3-dev \
+            librsvg2-dev \
+            patchelf
+
+      - name: Install frontend dependencies
+        run: pnpm install
+
+      - name: Run Rust tests
+        working-directory: src-tauri
+        run: cargo test
+
+      - name: Run frontend tests
+        run: pnpm test
+
+      - name: Build Tauri app
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tagName: ${{ github.ref_name || github.event.inputs.tag }}
+          releaseName: "Diverge ${{ github.ref_name || github.event.inputs.tag }}"
+          releaseBody: |
+            See the [changelog](https://github.com/${{ github.repository }}/commits/${{ github.ref_name || github.event.inputs.tag }}) for details.
+          releaseDraft: false
+          prerelease: false

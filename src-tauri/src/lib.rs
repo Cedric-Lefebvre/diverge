@@ -9,14 +9,14 @@ use std::sync::Mutex;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    run_with_args(String::new(), String::new());
+    run_with_args(String::new(), String::new(), String::new());
 }
 
-pub fn run_with_args(left_dir: String, right_dir: String) {
+pub fn run_with_args(left_dir: String, right_dir: String, cwd: String) {
     let cfg = config::load_config().unwrap_or_else(|_| config::default_config());
 
     let state = AppState {
-        cli_args: CliArgs { left_dir, right_dir },
+        cli_args: CliArgs { left_dir, right_dir, cwd },
         config: cfg,
     };
 

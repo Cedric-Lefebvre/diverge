@@ -3,6 +3,7 @@ import { open } from "@tauri-apps/plugin-dialog";
 interface ToolbarProps {
   leftDir: string;
   rightDir: string;
+  cwd: string;
   onSetLeftDir: (dir: string) => void;
   onSetRightDir: (dir: string) => void;
   onCompare: () => void;
@@ -20,6 +21,7 @@ interface ToolbarProps {
 export function Toolbar({
   leftDir,
   rightDir,
+  cwd,
   onSetLeftDir,
   onSetRightDir,
   onCompare,
@@ -35,10 +37,12 @@ export function Toolbar({
 }: ToolbarProps) {
   const pickFolder = async (side: "left" | "right") => {
     try {
+      const defaultPath = (side === "left" ? leftDir : rightDir) || cwd || undefined;
       const selected = await open({
         directory: true,
         multiple: false,
         title: `Select ${side === "left" ? "Left (Source)" : "Right (Target)"} Folder`,
+        defaultPath,
       });
       if (typeof selected === "string") {
         if (side === "left") onSetLeftDir(selected);
