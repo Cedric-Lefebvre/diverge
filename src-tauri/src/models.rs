@@ -13,10 +13,16 @@ pub struct EditorPreferences {
     pub minimap_enabled: bool,
     #[serde(default = "default_true")]
     pub show_full_content: bool,
+    #[serde(default = "default_sidebar_width")]
+    pub sidebar_width: u32,
 }
 
 fn default_true() -> bool {
     true
+}
+
+fn default_sidebar_width() -> u32 {
+    280
 }
 
 impl Default for EditorPreferences {
@@ -24,6 +30,7 @@ impl Default for EditorPreferences {
         Self {
             minimap_enabled: false,
             show_full_content: true,
+            sidebar_width: 280,
         }
     }
 }

@@ -2,6 +2,7 @@ import { useMemo, useState, useEffect, useCallback, useRef } from "react";
 import type { CompareEntry, EffectiveStatus } from "../types";
 import { STATUS_STYLES } from "../constants/statusConfig";
 import { getFolderForPath, getFileName } from "../utils/pathUtils";
+import { getFileIcon } from "../utils/fileIcons";
 
 type StatusFilter = "different" | "only_left" | "only_right" | "identical";
 const ALL_STATUSES: StatusFilter[] = ["different", "only_left", "only_right", "identical"];
@@ -27,6 +28,7 @@ interface FileTreeProps {
   onToggleAllFolders: () => void;
   onCheckAllDifferent: () => void;
   onUncheckAll: () => void;
+  width: number;
 }
 
 export function FileTree({
@@ -43,6 +45,7 @@ export function FileTree({
   onToggleAllFolders,
   onCheckAllDifferent,
   onUncheckAll,
+  width,
 }: FileTreeProps) {
   const [ignoredCollapsed, setIgnoredCollapsed] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -171,7 +174,7 @@ export function FileTree({
     folderKeys.length > 0 && collapsedFolders.size === folderKeys.length;
 
   return (
-    <div className="file-tree" ref={treeRef}>
+    <div className="file-tree" ref={treeRef} style={{ width }}>
       <div className="file-tree-header">
         <span className="file-tree-title">Files</span>
         <div className="file-tree-actions">
@@ -318,6 +321,18 @@ export function FileTree({
                       >
                         {style.icon}
                       </span>
+                      {(() => {
+                        const icon = getFileIcon(entry.rel_path);
+                        return (
+                          <span
+                            className="file-type-badge"
+                            style={{ color: icon.color }}
+                            title={icon.label}
+                          >
+                            {icon.label}
+                          </span>
+                        );
+                      })()}
                       <span className="file-name" title={entry.rel_path}>
                         {getFileName(entry.rel_path)}
                       </span>

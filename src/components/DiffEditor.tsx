@@ -1,10 +1,12 @@
 import { DiffEditor as MonacoDiffEditor } from "@monaco-editor/react";
 import type { editor } from "monaco-editor";
 import { useRef, useEffect, useCallback, useMemo, useState } from "react";
+import { invoke } from "@tauri-apps/api/core";
 import type { CompareEntry, EditorPreferences } from "../types";
 import { getLanguageForFile } from "../utils/languageMap";
 import { parseStructure } from "../utils/structureParser";
 import { MONACO_DIFF_OPTIONS } from "../constants/statusConfig";
+import { getFileIcon } from "../utils/fileIcons";
 import { OutlineModal } from "./OutlineModal";
 
 interface DiffEditorProps {
@@ -30,13 +32,18 @@ export function DiffEditorView({
 }: DiffEditorProps) {
   const editorRef = useRef<editor.IStandaloneDiffEditor | null>(null);
   const disposableRef = useRef<{ dispose: () => void } | null>(null);
+  const origDisposableRef = useRef<{ dispose: () => void } | null>(null);
   const [outlineOpen, setOutlineOpen] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
   const [canUndo, setCanUndo] = useState(false);
   const [canRedo, setCanRedo] = useState(false);
+  const [leftDirty, setLeftDirty] = useState(false);
+  const [savingLeft, setSavingLeft] = useState(false);
   const versionRef = useRef({ initial: 0, current: 0 });
+  const origVersionRef = useRef(0);
 
   const language = getLanguageForFile(entry.rel_path);
+  const fileIcon = getFileIcon(entry.rel_path);
   const rightContent = modifiedContent ?? entry.right_content;
 
   const outlineNodes = useMemo(
@@ -70,6 +77,18 @@ export function DiffEditorView({
           setCanRedo(false);
         }
       });
+
+      const originalEditor = diffEditor.getOriginalEditor();
+      const origModel = originalEditor.getModel();
+      if (origModel) {
+        origVersionRef.current = origModel.getAlternativeVersionId();
+      }
+      origDisposableRef.current = originalEditor.onDidChangeModelContent(() => {
+        if (origModel) {
+          setLeftDirty(origModel.getAlternativeVersionId() !== origVersionRef.current);
+        }
+      });
+
       // Check for diff changes once computed
       setTimeout(() => {
         const changes = diffEditor.getLineChanges();
@@ -83,6 +102,8 @@ export function DiffEditorView({
     return () => {
       disposableRef.current?.dispose();
       disposableRef.current = null;
+      origDisposableRef.current?.dispose();
+      origDisposableRef.current = null;
     };
   }, []);
 
@@ -194,6 +215,20 @@ export function DiffEditorView({
     }, 10);
   }, []);
 
+  const handleSaveLeft = useCallback(async () => {
+    const ed = editorRef.current?.getOriginalEditor();
+    if (!ed || !entry.left_path) return;
+    setSavingLeft(true);
+    try {
+      await invoke("write_file", { path: entry.left_path, content: ed.getValue() });
+      setLeftDirty(false);
+      const model = ed.getModel();
+      if (model) origVersionRef.current = model.getAlternativeVersionId();
+    } finally {
+      setSavingLeft(false);
+    }
+  }, [entry.left_path]);
+
   // Keyboard shortcuts: n/p for next/prev change, u for undo, Ctrl+Shift+Z for redo
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -219,6 +254,9 @@ export function DiffEditorView({
     <div className="diff-editor-container">
       <div className="diff-editor-header">
         <div className="diff-editor-filepath">
+          <span className="file-type-badge" style={{ color: fileIcon.color }}>
+            {fileIcon.label}
+          </span>
           <span>{entry.rel_path}</span>
           <span className={`diff-editor-badge badge-${entry.status}`}>
             {entry.status.replace("_", " ").toUpperCase()}
@@ -289,13 +327,23 @@ export function DiffEditorView({
               Apply Left → Right
             </button>
           )}
+          {leftDirty && (
+            <button
+              className="btn btn-sm btn-success"
+              onClick={handleSaveLeft}
+              disabled={savingLeft}
+              title="Save left file to disk"
+            >
+              {savingLeft ? "Saving..." : "Save Left"}
+            </button>
+          )}
           {modifiedContent !== undefined && (
             <button
               className="btn btn-sm btn-success"
               onClick={onSaveFile}
-              title="Save this file to disk"
+              title="Save right file to disk"
             >
-              Save
+              Save Right
             </button>
           )}
         </div>
