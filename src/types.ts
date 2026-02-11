@@ -26,6 +26,7 @@ export interface CliArgs {
 export interface EditorPreferences {
   minimap_enabled: boolean;
   show_full_content: boolean;
+  sidebar_width: number;
 }
 
 export interface AppConfig {

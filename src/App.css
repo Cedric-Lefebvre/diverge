@@ -281,13 +281,25 @@ body {
    ============================================================ */
 
 .file-tree {
-  width: var(--sidebar-width);
-  min-width: var(--sidebar-width);
   background: var(--bg-secondary);
   border-right: 1px solid var(--border);
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  flex-shrink: 0;
+}
+
+.resize-handle {
+  width: 4px;
+  cursor: col-resize;
+  background: transparent;
+  flex-shrink: 0;
+  transition: background 0.15s;
+}
+
+.resize-handle:hover,
+.resize-handle.active {
+  background: var(--accent);
 }
 
 .file-tree-header {
@@ -433,6 +445,17 @@ body {
   text-overflow: ellipsis;
   white-space: nowrap;
   font-size: 13px;
+}
+
+.file-type-badge {
+  font-size: 9px;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  letter-spacing: 0.3px;
+  flex-shrink: 0;
+  min-width: 20px;
+  text-align: center;
+  opacity: 0.85;
 }
 
 .file-applied-badge {
@@ -1107,4 +1130,48 @@ body {
   0% { background: rgba(255, 213, 79, 0.35); }
   70% { background: rgba(255, 213, 79, 0.2); }
   100% { background: transparent; }
+}
+
+/* ============================================================
+   Confirm Dialog
+   ============================================================ */
+
+.confirm-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9500;
+  animation: outline-fade-in 0.1s ease-out;
+}
+
+.confirm-dialog {
+  width: 400px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-light);
+  border-radius: 6px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+  padding: 20px;
+}
+
+.confirm-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+}
+
+.confirm-message {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin-bottom: 20px;
+}
+
+.confirm-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
 }

@@ -29,6 +29,7 @@ pub fn default_config() -> AppConfig {
             ".mypy_cache",
             ".pytest_cache",
             ".cargo",
+            ".terraform",
             "vendor",
         ]
         .iter()
@@ -96,6 +97,7 @@ mod tests {
             editor_preferences: EditorPreferences {
                 minimap_enabled: true,
                 show_full_content: true,
+                sidebar_width: 280,
             },
         };
         let yaml = serde_yaml::to_string(&cfg).unwrap();
@@ -129,6 +131,7 @@ mod tests {
             editor_preferences: EditorPreferences {
                 minimap_enabled: true,
                 show_full_content: true,
+                sidebar_width: 280,
             },
         };
         let yaml = serde_yaml::to_string(&cfg).unwrap();

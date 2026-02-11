@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useCompare } from "./hooks/useCompare";
 import { useSettings } from "./hooks/useSettings";
 import { useToast } from "./hooks/useToast";
@@ -8,6 +8,7 @@ import { DiffEditorView } from "./components/DiffEditor";
 import { SettingsPanel } from "./components/SettingsPanel";
 import { StatusBar } from "./components/StatusBar";
 import { ToastContainer } from "./components/Toast";
+import { ConfirmDialog } from "./components/ConfirmDialog";
 import "./App.css";
 
 function App() {
@@ -16,6 +17,54 @@ function App() {
   const { toasts, showToast } = useToast();
 
   const modifiedCount = Object.keys(cmp.modifiedContents).length;
+  const [confirm, setConfirm] = useState<"applyAll" | "saveAll" | null>(null);
+
+  const [sidebarWidth, setSidebarWidth] = useState(
+    settings.config?.editor_preferences.sidebar_width ?? 280
+  );
+  const draggingRef = useRef(false);
+  const startXRef = useRef(0);
+  const startWidthRef = useRef(0);
+
+  useEffect(() => {
+    if (!draggingRef.current && settings.config) {
+      setSidebarWidth(settings.config.editor_preferences.sidebar_width ?? 280);
+    }
+  }, [settings.config]);
+
+  const onResizeStart = useCallback(
+    (e: React.MouseEvent) => {
+      e.preventDefault();
+      draggingRef.current = true;
+      startXRef.current = e.clientX;
+      startWidthRef.current = sidebarWidth;
+      document.body.style.cursor = "col-resize";
+      document.body.style.userSelect = "none";
+    },
+    [sidebarWidth]
+  );
+
+  useEffect(() => {
+    const onMouseMove = (e: MouseEvent) => {
+      if (!draggingRef.current) return;
+      const delta = e.clientX - startXRef.current;
+      const newWidth = Math.min(Math.max(startWidthRef.current + delta, 180), 600);
+      setSidebarWidth(newWidth);
+    };
+    const onMouseUp = () => {
+      if (!draggingRef.current) return;
+      draggingRef.current = false;
+      document.body.style.cursor = "";
+      document.body.style.userSelect = "";
+      settings.updateEditorPref({ sidebar_width: Math.round(sidebarWidth) });
+    };
+    document.addEventListener("mousemove", onMouseMove);
+    document.addEventListener("mouseup", onMouseUp);
+    return () => {
+      document.removeEventListener("mousemove", onMouseMove);
+      document.removeEventListener("mouseup", onMouseUp);
+    };
+  }, [settings, sidebarWidth]);
 
   const handleSaveAll = useCallback(async () => {
     try {
@@ -78,9 +127,9 @@ function App() {
         onSetLeftDir={cmp.setLeftDir}
         onSetRightDir={cmp.setRightDir}
         onCompare={cmp.compare}
-        onApplyAll={handleApplyAll}
+        onApplyAll={() => setConfirm("applyAll")}
         onApplySelected={handleApplySelected}
-        onSaveAll={handleSaveAll}
+        onSaveAll={() => { setConfirm("saveAll"); return Promise.resolve(0); }}
         onRefresh={handleRefresh}
         onClear={cmp.clear}
         loading={cmp.loading}
@@ -103,21 +152,28 @@ function App() {
 
       <div className="main-content">
         {cmp.result && (
-          <FileTree
-            entries={cmp.result.entries}
-            selectedFile={cmp.selectedFile}
-            checkedFiles={cmp.checkedFiles}
-            collapsedFolders={cmp.collapsedFolders}
-            ignoreDirs={cmp.result?.ignored_dirs ?? []}
-            getEffectiveStatus={cmp.getEffectiveStatus}
-            onSelect={cmp.selectFile}
-            onToggleChecked={cmp.toggleChecked}
-            onToggleFolderChecked={cmp.toggleFolderChecked}
-            onToggleFolder={cmp.toggleFolder}
-            onToggleAllFolders={cmp.toggleAllFolders}
-            onCheckAllDifferent={cmp.checkAllDifferent}
-            onUncheckAll={cmp.uncheckAll}
-          />
+          <>
+            <FileTree
+              entries={cmp.result.entries}
+              selectedFile={cmp.selectedFile}
+              checkedFiles={cmp.checkedFiles}
+              collapsedFolders={cmp.collapsedFolders}
+              ignoreDirs={cmp.result?.ignored_dirs ?? []}
+              getEffectiveStatus={cmp.getEffectiveStatus}
+              onSelect={cmp.selectFile}
+              onToggleChecked={cmp.toggleChecked}
+              onToggleFolderChecked={cmp.toggleFolderChecked}
+              onToggleFolder={cmp.toggleFolder}
+              onToggleAllFolders={cmp.toggleAllFolders}
+              onCheckAllDifferent={cmp.checkAllDifferent}
+              onUncheckAll={cmp.uncheckAll}
+              width={sidebarWidth}
+            />
+            <div
+              className="resize-handle"
+              onMouseDown={onResizeStart}
+            />
+          </>
         )}
 
         <div className="editor-panel">
@@ -165,6 +221,27 @@ function App() {
       />
 
       <ToastContainer toasts={toasts} />
+
+      {confirm === "applyAll" && (
+        <ConfirmDialog
+          title="Apply All to Right"
+          message="This will overwrite the right side of all different files with the left side content. This cannot be undone."
+          confirmLabel="Apply All"
+          confirmVariant="accent"
+          onConfirm={() => { setConfirm(null); handleApplyAll(); }}
+          onCancel={() => setConfirm(null)}
+        />
+      )}
+      {confirm === "saveAll" && (
+        <ConfirmDialog
+          title="Save All Modified Files"
+          message={`This will write ${modifiedCount} modified file${modifiedCount !== 1 ? "s" : ""} to disk, overwriting the existing files. This cannot be undone.`}
+          confirmLabel="Save All"
+          confirmVariant="accent"
+          onConfirm={() => { setConfirm(null); handleSaveAll(); }}
+          onCancel={() => setConfirm(null)}
+        />
+      )}
     </div>
   );
 }

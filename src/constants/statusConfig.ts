@@ -16,7 +16,7 @@ export const STATUS_STYLES: Record<EffectiveStatus, StatusStyle> = {
 
 export const MONACO_DIFF_OPTIONS = {
   readOnly: false,
-  originalEditable: false,
+  originalEditable: true,
   renderSideBySide: true,
   minimap: { enabled: false },
   fontSize: 13,
