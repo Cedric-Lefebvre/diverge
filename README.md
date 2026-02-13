@@ -6,22 +6,17 @@ A desktop app for comparing two directories side-by-side with inline editing. Bu
 
 ## Features
 
-- Side-by-side diff viewer powered by Monaco Editor (same engine as VS Code)
-- Collapsible unchanged regions so you can focus on what matters
-- Apply changes from left to right per-file or in bulk
-- Inline editing on the right side before saving
-- Folder tree with collapsible directories and folder-level checkboxes
-- Color-coded file status: green (identical/applied), yellow (different), red (only left), purple (only right)
-- Status filter toggles to show/hide files by status (Different, Only Left, Only Right, Identical)
-- Search bar to filter files in the tree
-- Keyboard navigation: arrow keys / j/k to navigate, Space to toggle, / to search, Escape to blur
-- Document outline modal for YAML/JSON/code files (browse structure, click to jump)
-- Minimap toggle for the diff editor (persisted in settings)
+- Monaco-powered side-by-side diffs with collapsible unchanged regions
+- Apply changes left-to-right per-file or in bulk, with inline editing before saving
+- Folder tree with search, checkboxes, and color-coded file statuses
+- Keyboard navigation
+- Document outline for YAML/JSON/code files
 - Configurable ignore directories (`~/.diverge/config.yaml`)
-- Toast notifications for save/apply actions
-- Native folder picker dialogs
-- CLI support with relative and absolute paths
-- Cross-platform: Linux (X11/Wayland) and macOS
+- CLI and GUI support — Linux (X11/Wayland) and macOS
+
+![File tree with color-coded statuses and file type icons](docs/screenshots/01-overview.png)
+
+![Side-by-side diff view of a Rust file](docs/screenshots/02-diff-view.png)
 
 ## Install
 
