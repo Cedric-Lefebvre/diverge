@@ -24,6 +24,7 @@ pub fn run_with_args(left_dir: String, right_dir: String, cwd: String) {
         .manage(Mutex::new(state))
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_fs::init())
         .invoke_handler(tauri::generate_handler![
             commands::compare_directories,
             commands::write_file,

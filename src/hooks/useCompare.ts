@@ -21,6 +21,12 @@ export function useCompare() {
     modsRef.current.reset();
   }, []);
 
+  const compareWith = useCallback(async (left: string, right: string) => {
+    await dirsRef.current.compareWith(left, right);
+    treeRef.current.reset();
+    modsRef.current.reset();
+  }, []);
+
   const clear = useCallback(() => {
     dirsRef.current.clear();
     treeRef.current.reset();
@@ -72,6 +78,7 @@ export function useCompare() {
 
     // Top-level actions
     compare,
+    compareWith,
     clear,
   };
 }

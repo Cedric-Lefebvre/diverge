@@ -29,9 +29,15 @@ export interface EditorPreferences {
   sidebar_width: number;
 }
 
+export interface RecentComparison {
+  left_dir: string;
+  right_dir: string;
+}
+
 export interface AppConfig {
   ignore_dirs: string[];
   editor_preferences: EditorPreferences;
+  recent_comparisons: RecentComparison[];
 }
 
 export type EffectiveStatus =

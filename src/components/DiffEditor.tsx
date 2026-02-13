@@ -229,12 +229,26 @@ export function DiffEditorView({
     }
   }, [entry.left_path]);
 
-  // Keyboard shortcuts: n/p for next/prev change, u for undo, Ctrl+Shift+Z for redo
+  // Keyboard shortcuts
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
+      // Ctrl+S / Cmd+S — save active file
+      if (e.key === "s" && (e.ctrlKey || e.metaKey)) {
+        e.preventDefault();
+        const diff = editorRef.current;
+        if (!diff) return;
+        // Determine which side has focus
+        const origEditor = diff.getOriginalEditor();
+        const origHasFocus = origEditor.hasTextFocus();
+        if (origHasFocus && leftDirty) {
+          handleSaveLeft();
+        } else if (modifiedContent !== undefined) {
+          onSaveFile();
+        }
+        return;
+      }
+
       const tag = (e.target as HTMLElement)?.tagName;
-      // Only handle when not typing in an input/textarea
-      // But DO handle when focus is inside Monaco (which uses textarea internally)
       const isMonacoTextarea = (e.target as HTMLElement)?.closest?.(".monaco-editor");
       if ((tag === "INPUT" || tag === "TEXTAREA") && !isMonacoTextarea) return;
 
@@ -248,7 +262,7 @@ export function DiffEditorView({
     };
     document.addEventListener("keydown", handler);
     return () => document.removeEventListener("keydown", handler);
-  }, [navigateChange]);
+  }, [navigateChange, leftDirty, handleSaveLeft, modifiedContent, onSaveFile]);
 
   return (
     <div className="diff-editor-container">
@@ -258,6 +272,13 @@ export function DiffEditorView({
             {fileIcon.label}
           </span>
           <span>{entry.rel_path}</span>
+          <button
+            className="btn-tiny"
+            onClick={() => navigator.clipboard.writeText(entry.rel_path)}
+            title="Copy path"
+          >
+            ⧉
+          </button>
           <span className={`diff-editor-badge badge-${entry.status}`}>
             {entry.status.replace("_", " ").toUpperCase()}
           </span>

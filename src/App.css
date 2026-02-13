@@ -139,6 +139,100 @@ body {
   flex-wrap: wrap;
 }
 
+/* ---- Recent Comparisons Dropdown ---- */
+
+.recent-dropdown-wrapper {
+  position: relative;
+}
+
+.recent-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+}
+
+.recent-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 4px;
+  min-width: 360px;
+  max-height: 300px;
+  overflow-y: auto;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-light);
+  border-radius: 4px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
+  z-index: 200;
+  padding: 4px 0;
+}
+
+.recent-item-row {
+  display: flex;
+  align-items: center;
+}
+
+.recent-item-row:hover {
+  background: var(--bg-hover);
+}
+
+.recent-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  min-width: 0;
+  padding: 6px 10px;
+  background: none;
+  border: none;
+  color: var(--text-primary);
+  font-size: 12px;
+  font-family: var(--font-mono);
+  cursor: pointer;
+  text-align: left;
+}
+
+.recent-remove {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  margin-right: 4px;
+  background: none;
+  border: none;
+  border-radius: 3px;
+  color: var(--text-muted);
+  font-size: 14px;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.1s, background 0.1s, color 0.1s;
+}
+
+.recent-item-row:hover .recent-remove {
+  opacity: 1;
+}
+
+.recent-remove:hover {
+  background: var(--bg-active);
+  color: var(--text-primary);
+}
+
+.recent-left,
+.recent-right {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+  flex: 1;
+}
+
+.recent-arrow {
+  color: var(--text-muted);
+  flex-shrink: 0;
+  font-size: 11px;
+}
+
 /* ============================================================
    Buttons
    ============================================================ */

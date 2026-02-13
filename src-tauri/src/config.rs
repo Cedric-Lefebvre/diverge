@@ -36,6 +36,7 @@ pub fn default_config() -> AppConfig {
         .map(|s| s.to_string())
         .collect(),
         editor_preferences: Default::default(),
+        recent_comparisons: vec![],
     }
 }
 
@@ -99,6 +100,7 @@ mod tests {
                 show_full_content: true,
                 sidebar_width: 280,
             },
+            recent_comparisons: vec![],
         };
         let yaml = serde_yaml::to_string(&cfg).unwrap();
         let parsed: AppConfig = serde_yaml::from_str(&yaml).unwrap();
@@ -133,6 +135,7 @@ mod tests {
                 show_full_content: true,
                 sidebar_width: 280,
             },
+            recent_comparisons: vec![],
         };
         let yaml = serde_yaml::to_string(&cfg).unwrap();
         assert!(yaml.contains("test"));

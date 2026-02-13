@@ -57,6 +57,15 @@ export function useDirectories() {
     setError(null);
   }, []);
 
+  const compareWith = useCallback(
+    (left: string, right: string) => {
+      setLeftDir(left);
+      setRightDir(right);
+      return runCompare(left, right);
+    },
+    [runCompare]
+  );
+
   return {
     leftDir,
     rightDir,
@@ -67,6 +76,7 @@ export function useDirectories() {
     loading,
     error,
     compare,
+    compareWith,
     clear,
     cwd,
   };

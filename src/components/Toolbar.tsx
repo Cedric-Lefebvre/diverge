@@ -1,4 +1,6 @@
+import { useState } from "react";
 import { open } from "@tauri-apps/plugin-dialog";
+import type { RecentComparison } from "../types";
 
 interface ToolbarProps {
   leftDir: string;
@@ -16,6 +18,18 @@ interface ToolbarProps {
   hasResult: boolean;
   hasModified: boolean;
   hasChecked: boolean;
+  recentComparisons: RecentComparison[];
+  onSelectRecent: (leftDir: string, rightDir: string) => void;
+  onRemoveRecent: (leftDir: string, rightDir: string) => void;
+}
+
+function shortenPath(p: string): string {
+  const home = p.replace(/^\/home\/[^/]+/, "~").replace(/^\/Users\/[^/]+/, "~");
+  const parts = home.split("/");
+  if (parts.length > 3) {
+    return parts[0] + "/.../" + parts.slice(-2).join("/");
+  }
+  return home;
 }
 
 export function Toolbar({
@@ -34,7 +48,12 @@ export function Toolbar({
   hasResult,
   hasModified,
   hasChecked,
+  recentComparisons,
+  onSelectRecent,
+  onRemoveRecent,
 }: ToolbarProps) {
+  const [recentOpen, setRecentOpen] = useState(false);
+
   const pickFolder = async (side: "left" | "right") => {
     try {
       const defaultPath = (side === "left" ? leftDir : rightDir) || cwd || undefined;
@@ -94,6 +113,49 @@ export function Toolbar({
           >
             {loading ? "Comparing..." : "Compare"}
           </button>
+          <div className="recent-dropdown-wrapper">
+            <button
+              className="btn btn-ghost"
+              onClick={() => recentComparisons.length > 0 && setRecentOpen(!recentOpen)}
+              disabled={recentComparisons.length === 0}
+              title={recentComparisons.length > 0 ? "Recent comparisons" : "No recent comparisons yet"}
+            >
+              ▾ Recent
+            </button>
+              {recentOpen && recentComparisons.length > 0 && (
+                <>
+                  <div className="recent-backdrop" onClick={() => setRecentOpen(false)} />
+                  <div className="recent-dropdown">
+                    {recentComparisons.map((r, i) => (
+                      <div key={i} className="recent-item-row">
+                        <button
+                          className="recent-item"
+                          onClick={() => {
+                            onSelectRecent(r.left_dir, r.right_dir);
+                            setRecentOpen(false);
+                          }}
+                          title={`${r.left_dir}\n↔\n${r.right_dir}`}
+                        >
+                          <span className="recent-left">{shortenPath(r.left_dir)}</span>
+                          <span className="recent-arrow">↔</span>
+                          <span className="recent-right">{shortenPath(r.right_dir)}</span>
+                        </button>
+                        <button
+                          className="recent-remove"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onRemoveRecent(r.left_dir, r.right_dir);
+                          }}
+                          title="Remove from recent"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
+          </div>
           <button className="btn btn-ghost" onClick={onClear} title="Clear everything">
             Clear
           </button>

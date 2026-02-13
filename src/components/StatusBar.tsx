@@ -1,12 +1,36 @@
-import type { CompareResult } from "../types";
+import { useMemo } from "react";
+import type { CompareEntry, CompareResult } from "../types";
 
 interface StatusBarProps {
   result: CompareResult | null;
   selectedFile: string | null;
+  selectedEntry: CompareEntry | null;
+  modifiedContent: string | undefined;
   modifiedCount: number;
 }
 
-export function StatusBar({ result, selectedFile, modifiedCount }: StatusBarProps) {
+function computeDiffStats(left: string, right: string) {
+  const leftLines = left ? left.split("\n") : [];
+  const rightLines = right ? right.split("\n") : [];
+  const leftSet = new Set(leftLines);
+  const rightSet = new Set(rightLines);
+  let additions = 0;
+  let deletions = 0;
+  for (const line of rightLines) {
+    if (!leftSet.has(line)) additions++;
+  }
+  for (const line of leftLines) {
+    if (!rightSet.has(line)) deletions++;
+  }
+  return { additions, deletions, lines: rightLines.length };
+}
+
+export function StatusBar({ result, selectedFile, selectedEntry, modifiedContent, modifiedCount }: StatusBarProps) {
+  const diffStats = useMemo(() => {
+    if (!selectedEntry) return null;
+    const right = modifiedContent ?? selectedEntry.right_content;
+    return computeDiffStats(selectedEntry.left_content, right);
+  }, [selectedEntry, modifiedContent]);
   return (
     <div className="status-bar">
       <div className="status-bar-left">
@@ -49,6 +73,20 @@ export function StatusBar({ result, selectedFile, modifiedCount }: StatusBarProp
           <span className="status-item status-modified">
             {modifiedCount} unsaved
           </span>
+        )}
+        {diffStats && (
+          <>
+            <span className="status-item">
+              Ln <span className="status-count">{diffStats.lines}</span>
+            </span>
+            <span className="status-sep">│</span>
+            <span className="status-item" style={{ color: "#b5f5e0" }}>
+              +{diffStats.additions}
+            </span>
+            <span className="status-item" style={{ color: "#ffb0b0" }}>
+              −{diffStats.deletions}
+            </span>
+          </>
         )}
         {selectedFile && (
           <span className="status-item status-filepath">{selectedFile}</span>

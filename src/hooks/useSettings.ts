@@ -57,6 +57,31 @@ export function useSettings() {
     });
   }, []);
 
+  const addRecentComparison = useCallback((leftDir: string, rightDir: string) => {
+    setConfig((prev) => {
+      if (!prev) return prev;
+      const recent = (prev.recent_comparisons ?? []).filter(
+        (r) => !(r.left_dir === leftDir && r.right_dir === rightDir)
+      );
+      recent.unshift({ left_dir: leftDir, right_dir: rightDir });
+      const updated = { ...prev, recent_comparisons: recent.slice(0, 10) };
+      invoke("save_config", { newConfig: updated });
+      return updated;
+    });
+  }, []);
+
+  const removeRecentComparison = useCallback((leftDir: string, rightDir: string) => {
+    setConfig((prev) => {
+      if (!prev) return prev;
+      const recent = (prev.recent_comparisons ?? []).filter(
+        (r) => !(r.left_dir === leftDir && r.right_dir === rightDir)
+      );
+      const updated = { ...prev, recent_comparisons: recent };
+      invoke("save_config", { newConfig: updated });
+      return updated;
+    });
+  }, []);
+
   const save = useCallback(async () => {
     if (!config) return;
     setSaving(true);
@@ -68,5 +93,5 @@ export function useSettings() {
     }
   }, [config]);
 
-  return { config, dirty, saving, addIgnoreDir, removeIgnoreDir, editIgnoreDir, updateEditorPref, save };
+  return { config, dirty, saving, addIgnoreDir, removeIgnoreDir, editIgnoreDir, updateEditorPref, addRecentComparison, removeRecentComparison, save };
 }

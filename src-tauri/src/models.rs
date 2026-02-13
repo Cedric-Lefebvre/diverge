@@ -36,11 +36,19 @@ impl Default for EditorPreferences {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct RecentComparison {
+    pub left_dir: String,
+    pub right_dir: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AppConfig {
     #[serde(default)]
     pub ignore_dirs: Vec<String>,
     #[serde(default)]
     pub editor_preferences: EditorPreferences,
+    #[serde(default)]
+    pub recent_comparisons: Vec<RecentComparison>,
 }
 
 pub struct AppState {
