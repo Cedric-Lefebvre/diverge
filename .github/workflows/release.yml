@@ -82,7 +82,7 @@ jobs:
         env:
           PACKAGECLOUD_TOKEN: ${{ secrets.PACKAGECLOUD_TOKEN }}
         run: |
-          DEB=$(find target/release/bundle/deb -name "*.deb" -not -name "*.sig" | head -1)
+          DEB=$(find src-tauri/target/release/bundle/deb -name "*.deb" -not -name "*.sig" | head -1)
           echo "Found: $DEB"
           curl -f -X POST \
             "https://api.buildkite.com/v2/packages/organizations/cedric-lefebvre/registries/ppa/packages" \
