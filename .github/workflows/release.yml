@@ -70,9 +70,21 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tagName: ${{ github.ref_name || github.event.inputs.tag }}
-          releaseName: "Diverge ${{ github.ref_name || github.event.inputs.tag }}"
+          tagName: ${{ github.event.inputs.tag || github.ref_name }}
+          releaseName: "Diverge ${{ github.event.inputs.tag || github.ref_name }}"
           releaseBody: |
-            See the [changelog](https://github.com/${{ github.repository }}/commits/${{ github.ref_name || github.event.inputs.tag }}) for details.
+            See the [changelog](https://github.com/${{ github.repository }}/commits/${{ github.event.inputs.tag || github.ref_name }}) for details.
           releaseDraft: false
           prerelease: false
+
+      - name: Push to Buildkite Packages
+        if: matrix.target == 'linux' && success()
+        env:
+          PACKAGECLOUD_TOKEN: ${{ secrets.PACKAGECLOUD_TOKEN }}
+        run: |
+          DEB=$(find target/release/bundle/deb -name "*.deb" -not -name "*.sig" | head -1)
+          echo "Found: $DEB"
+          curl -f -X POST \
+            "https://api.buildkite.com/v2/packages/organizations/cedric-lefebvre/registries/ppa/packages" \
+            -H "Authorization: Bearer $PACKAGECLOUD_TOKEN" \
+            -F "file=@$DEB"

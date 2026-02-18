@@ -1,6 +1,6 @@
 {
   "name": "diverge",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Desktop folder comparison tool with side-by-side diff viewing, inline editing, and bulk operations",
   "private": true,
   "type": "module",

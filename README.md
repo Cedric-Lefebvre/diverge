@@ -20,6 +20,20 @@ A desktop app for comparing two directories side-by-side with inline editing. Bu
 
 ## Install
 
+### APT (Ubuntu / Debian)
+
+```bash
+curl -fsSL "https://packages.buildkite.com/cedric-lefebvre/ppa/gpgkey" \
+  | sudo gpg --dearmor -o /etc/apt/keyrings/cedric-lefebvre_ppa-archive-keyring.gpg
+
+echo -e "deb [signed-by=/etc/apt/keyrings/cedric-lefebvre_ppa-archive-keyring.gpg] https://packages.buildkite.com/cedric-lefebvre/ppa/any/ any main\ndeb-src [signed-by=/etc/apt/keyrings/cedric-lefebvre_ppa-archive-keyring.gpg] https://packages.buildkite.com/cedric-lefebvre/ppa/any/ any main" \
+  | sudo tee /etc/apt/sources.list.d/buildkite-cedric-lefebvre-ppa.list
+
+sudo apt update && sudo apt install diverge
+```
+
+Once set up, `sudo apt upgrade` will keep Diverge up to date automatically.
+
 ### From releases
 
 Download the latest release from the [Releases](https://github.com/Cedric-Lefebvre/diverge/releases) page.

@@ -1,4 +1,5 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { getVersion } from "@tauri-apps/api/app";
 import type { CompareEntry, CompareResult } from "../types";
 
 interface StatusBarProps {
@@ -26,6 +27,12 @@ function computeDiffStats(left: string, right: string) {
 }
 
 export function StatusBar({ result, selectedFile, selectedEntry, modifiedContent, modifiedCount }: StatusBarProps) {
+  const [version, setVersion] = useState<string | null>(null);
+
+  useEffect(() => {
+    getVersion().then(setVersion);
+  }, []);
+
   const diffStats = useMemo(() => {
     if (!selectedEntry) return null;
     const right = modifiedContent ?? selectedEntry.right_content;
@@ -69,6 +76,9 @@ export function StatusBar({ result, selectedFile, selectedEntry, modifiedContent
         )}
       </div>
       <div className="status-bar-right">
+        {version && (
+          <span className="status-item" style={{ opacity: 0.4 }}>v{version}</span>
+        )}
         {modifiedCount > 0 && (
           <span className="status-item status-modified">
             {modifiedCount} unsaved
