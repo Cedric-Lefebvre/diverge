@@ -100,16 +100,36 @@ Launch the app and use the folder pickers to select two directories, then click 
 
 ### CLI
 
+Diverge detaches from the terminal automatically, so your shell prompt returns immediately — the same way VS Code behaves when you run `code`.
+
 ```bash
-# Absolute paths
-diverge /path/to/left /path/to/right
-
-# Relative paths (resolved from current directory)
-diverge ./env-staging ./env-production
-
-# Mix both
-diverge ./local-config /etc/app/config
+diverge                          # Open with empty comparison
+diverge /path/to/dir             # Open with left side pre-filled
+diverge ./env-staging ./env-prod # Compare two directories
+diverge ~/a ~/b --wait           # Block until the window is closed
 ```
+
+**Options**
+
+| Flag | Description |
+|------|-------------|
+| `-h`, `--help` | Print help |
+| `-V`, `--version` | Print version |
+| `-w`, `--wait` | Block until the window is closed (useful for git editors) |
+
+Paths can be absolute, relative, or `~/`-prefixed — they are resolved from the current working directory at the time of the call.
+
+**Use as a git difftool**
+
+```bash
+# ~/.gitconfig
+[diff]
+    tool = diverge
+[difftool "diverge"]
+    cmd = diverge "$LOCAL" "$REMOTE" --wait
+```
+
+Then run `git difftool` to open Diverge for each changed file.
 
 ### Keyboard shortcuts
 
