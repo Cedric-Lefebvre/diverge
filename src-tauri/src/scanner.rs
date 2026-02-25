@@ -1,4 +1,3 @@
-use std::cell::RefCell;
 use std::collections::BTreeMap;
 use std::fs;
 use std::path::Path;
@@ -13,7 +12,7 @@ pub fn scan_dir(root: &str, ignore_dirs: &[String]) -> (BTreeMap<String, (String
         return (files, vec![]);
     }
 
-    let ignored_found = RefCell::new(Vec::new());
+    let mut ignored_found = Vec::new();
 
     for entry in WalkDir::new(base)
         .into_iter()
@@ -22,7 +21,7 @@ pub fn scan_dir(root: &str, ignore_dirs: &[String]) -> (BTreeMap<String, (String
             let is_ignored = ignore_dirs.iter().any(|skip| skip == name.as_ref());
             if is_ignored && e.file_type().is_dir() {
                 if let Ok(rel) = e.path().strip_prefix(base) {
-                    ignored_found.borrow_mut().push(rel.to_string_lossy().to_string());
+                    ignored_found.push(rel.to_string_lossy().to_string());
                 }
             }
             !is_ignored
@@ -49,7 +48,7 @@ pub fn scan_dir(root: &str, ignore_dirs: &[String]) -> (BTreeMap<String, (String
         }
     }
 
-    (files, ignored_found.into_inner())
+    (files, ignored_found)
 }
 
 #[cfg(test)]

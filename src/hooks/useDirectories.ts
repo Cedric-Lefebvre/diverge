@@ -10,22 +10,6 @@ export function useDirectories() {
   const [error, setError] = useState<string | null>(null);
   const [cwd, setCwd] = useState("");
 
-  const initDone = useRef(false);
-  useEffect(() => {
-    if (initDone.current) return;
-    initDone.current = true;
-
-    invoke<CliArgs>("get_cli_args").then((args) => {
-      if (args.cwd) setCwd(args.cwd);
-      if (args.left_dir && args.right_dir) {
-        setLeftDir(args.left_dir);
-        setRightDir(args.right_dir);
-        runCompare(args.left_dir, args.right_dir);
-      }
-    });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   const runCompare = useCallback(
     async (left: string, right: string) => {
       setLoading(true);
@@ -44,6 +28,21 @@ export function useDirectories() {
     },
     []
   );
+
+  const initDone = useRef(false);
+  useEffect(() => {
+    if (initDone.current) return;
+    initDone.current = true;
+
+    invoke<CliArgs>("get_cli_args").then((args) => {
+      if (args.cwd) setCwd(args.cwd);
+      if (args.left_dir && args.right_dir) {
+        setLeftDir(args.left_dir);
+        setRightDir(args.right_dir);
+        runCompare(args.left_dir, args.right_dir);
+      }
+    });
+  }, [runCompare]);
 
   const compare = useCallback(() => {
     if (!leftDir || !rightDir) return Promise.resolve();

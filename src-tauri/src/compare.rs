@@ -5,13 +5,10 @@ pub fn compare(left: &str, right: &str, ignore_dirs: &[String]) -> CompareResult
     let (left_files, left_ignored) = scan_dir(left, ignore_dirs);
     let (right_files, right_ignored) = scan_dir(right, ignore_dirs);
 
-    let mut ignored_dirs: Vec<String> = left_ignored;
-    for dir in right_ignored {
-        if !ignored_dirs.contains(&dir) {
-            ignored_dirs.push(dir);
-        }
-    }
+    let mut ignored_dirs = left_ignored;
+    ignored_dirs.extend(right_ignored);
     ignored_dirs.sort();
+    ignored_dirs.dedup();
 
     let mut all_keys: Vec<String> = left_files
         .keys()

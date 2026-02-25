@@ -67,11 +67,11 @@ export function FileTree({
     });
   };
 
-  const statusMatchesFilter = (entry: CompareEntry): boolean => {
+  const statusMatchesFilter = useCallback((entry: CompareEntry): boolean => {
     const eff = getEffectiveStatus(entry);
     if (eff === "applied") return activeStatuses.has("different");
     return activeStatuses.has(eff as StatusFilter);
-  };
+  }, [getEffectiveStatus, activeStatuses]);
 
   const filteredEntries = useMemo(() => {
     let result = entries.filter(statusMatchesFilter);
@@ -80,8 +80,7 @@ export function FileTree({
       result = result.filter((e) => e.rel_path.toLowerCase().includes(q));
     }
     return result;
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [entries, searchQuery, activeStatuses, getEffectiveStatus]);
+  }, [entries, searchQuery, statusMatchesFilter]);
 
   const { grouped, folderKeys } = useMemo(() => {
     const map = new Map<string, CompareEntry[]>();

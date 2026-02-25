@@ -17,7 +17,6 @@ export function useFileWatcher(
     let cancelled = false;
 
     const setup = async () => {
-      // Clean up previous watchers
       for (const unwatch of unwatchRef.current) {
         unwatch();
       }
@@ -27,7 +26,6 @@ export function useFileWatcher(
         try {
           const unwatch = await watch(dir, () => {
             if (cancelled) return;
-            // Debounce — many events fire at once during saves
             if (debounceRef.current) clearTimeout(debounceRef.current);
             debounceRef.current = setTimeout(() => {
               onRefresh();

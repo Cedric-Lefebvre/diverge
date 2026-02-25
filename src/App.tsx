@@ -101,7 +101,6 @@ function App() {
     showToast(`Applied ${count} selected file${count !== 1 ? "s" : ""}`);
   }, [cmp, showToast]);
 
-  // Save to recent history whenever a comparison completes (CLI, manual, or recent select)
   const prevResultRef = useRef(cmp.result);
   useEffect(() => {
     if (cmp.result && cmp.result !== prevResultRef.current && cmp.leftDir && cmp.rightDir) {
@@ -131,7 +130,6 @@ function App() {
     try {
       await cmp.compare();
     } catch {
-      // silent — don't toast on auto-refresh failures
     }
   }, [cmp.compare]);
 

@@ -4,11 +4,9 @@ use std::path::PathBuf;
 
 fn resolve_path(p: &str) -> String {
     let expanded = if p.starts_with("~/") {
-        if let Some(home) = std::env::var_os("HOME") {
-            PathBuf::from(home).join(&p[2..])
-        } else {
-            PathBuf::from(p)
-        }
+        dirs::home_dir()
+            .map(|h| h.join(&p[2..]))
+            .unwrap_or_else(|| PathBuf::from(p))
     } else {
         PathBuf::from(p)
     };
@@ -70,7 +68,7 @@ fn main() {
     let wait = has_flag("-w", "--wait");
 
     if !wait && std::env::var("_DIVERGE_DETACHED").is_err() {
-        #[cfg(target_os = "linux")]
+        #[cfg(all(target_os = "linux", not(debug_assertions)))]
         {
             let exe = std::fs::read_link("/proc/self/exe")
                 .unwrap_or_else(|_| std::env::current_exe().unwrap());
@@ -85,7 +83,7 @@ fn main() {
             return;
         }
 
-        #[cfg(target_os = "macos")]
+        #[cfg(all(target_os = "macos", not(debug_assertions)))]
         {
             use std::os::unix::process::CommandExt;
             let exe = std::env::current_exe().unwrap();

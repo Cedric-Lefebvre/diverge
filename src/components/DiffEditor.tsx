@@ -89,7 +89,6 @@ export function DiffEditorView({
         }
       });
 
-      // Check for diff changes once computed
       setTimeout(() => {
         const changes = diffEditor.getLineChanges();
         setHasChanges(!!changes && changes.length > 0);
@@ -126,7 +125,6 @@ export function DiffEditorView({
     } as editor.IDiffEditorOptions);
   }, [showFullContent]);
 
-  // Listen for diff update to track hasChanges
   useEffect(() => {
     const diff = editorRef.current;
     if (!diff) return;
@@ -209,7 +207,6 @@ export function DiffEditorView({
       if (model) {
         const ver = model.getAlternativeVersionId();
         setCanUndo(ver !== versionRef.current.initial);
-        // If version matches current, nothing left to redo
         setCanRedo(false);
       }
     }, 10);
@@ -229,15 +226,12 @@ export function DiffEditorView({
     }
   }, [entry.left_path]);
 
-  // Keyboard shortcuts
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      // Ctrl+S / Cmd+S — save active file
       if (e.key === "s" && (e.ctrlKey || e.metaKey)) {
         e.preventDefault();
         const diff = editorRef.current;
         if (!diff) return;
-        // Determine which side has focus
         const origEditor = diff.getOriginalEditor();
         const origHasFocus = origEditor.hasTextFocus();
         if (origHasFocus && leftDirty) {
